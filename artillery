@@ -3,4 +3,7 @@ import math
 import matplotlib.pyplot as plt
 
 g = 9.8
-
+X = input("please deside on an X coordinate:")
+Y = input("please deside on a Y coordinate.")
+print("you have entered {X} as your X coordinate.")
+print("you have entered {Y} as your Y coordinate.")
