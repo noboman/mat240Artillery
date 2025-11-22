@@ -4,10 +4,19 @@ import matplotlib.pyplot as plt
 
 
 g = 9.8
-X = input("please deside on an X coordinate:")
-Y = input("please deside on a Y coordinate:")
-print("you have entered {X} as your X coordinate.")
-print("you have entered {Y} as your Y coordinate.")
+
 
 for V in range(100, 160, 10):
     print(V)
+
+
+if __name__ == "__main__":
+    print("Single-shot artillery calculator (numerical root finding)")
+    try:
+        X = input("Please input an X coordinate:")
+        Y = input("Please ipunt a Y coordinate:")
+        print("You have entered {X} as your X coordinate.")
+        print("You have entered {Y} as your Y coordinate.")
+    except ValueError:
+        print("Invalid input, skipping single-shot part.")
+    
