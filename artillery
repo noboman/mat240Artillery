@@ -11,6 +11,9 @@ def function(theta, x, y, v0):
     return x * math.tan(theta) - g * x**2 / (2 * v0**2 * cos_t**2) - y
 
 def find_angles(x, y, v0):
+    # check for divisiion by 0
+    if x <= 0 or v0 <= 0:
+        return []
     return 1
 
 if __name__ == "__main__":
@@ -21,7 +24,7 @@ if __name__ == "__main__":
         print("You have entered {X} as your X coordinate.")
         print("You have entered {Y} as your Y coordinate.")
     except ValueError:
-        print("Invalid input, skipping single-shot part.")
+        print("Invalid input")
 
     v0_values = list(range(100, 151, 10))
     
