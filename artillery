@@ -2,7 +2,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-V = 100
+
 g = 9.8
 X = input("please deside on an X coordinate:")
 Y = input("please deside on a Y coordinate:")
