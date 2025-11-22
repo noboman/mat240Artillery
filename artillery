@@ -6,17 +6,24 @@ import matplotlib.pyplot as plt
 g = 9.8
 
 
-for V in range(100, 160, 10):
-    print(V)
 
+def function(theta, x, y, v0):
+    return 1
+
+def find_angles(x, y, v0):
+    return 1
 
 if __name__ == "__main__":
     print("Single-shot artillery calculator (numerical root finding)")
     try:
-        X = input("Please input an X coordinate:")
-        Y = input("Please ipunt a Y coordinate:")
+        x_target = input("Please input an X coordinate:")
+        y_target = input("Please ipunt a Y coordinate:")
         print("You have entered {X} as your X coordinate.")
         print("You have entered {Y} as your Y coordinate.")
     except ValueError:
         print("Invalid input, skipping single-shot part.")
+
+    v0_values = list(range(100, 151, 10))
     
+    for v0 in v0_values:
+            find_angles(x_target, y_target, v0)
