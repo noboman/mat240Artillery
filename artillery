@@ -8,7 +8,7 @@ g = 9.8
 
 
 def function(theta, x, y, v0):
-    return 1
+    return x * math.tan(theta) - g * x**2 / (2 * v0**2 * cos_t**2) - y
 
 def find_angles(x, y, v0):
     return 1
