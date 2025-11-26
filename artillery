@@ -6,65 +6,21 @@ import matplotlib.pyplot as plt
 g = 9.8
 tol = 0.1
 v0 = 100
-x = 1000
+x = 1020.4
 
-def XFunc(v0, theta):
-    return v0*(math.cos(theta))
+def trajectory(theta):
+    return x*math.tan(theta) - g*(
+        (x**2)/(2 * (v0**2) * (math.cos(theta))**2) )
+def approx(x0, x1, tol):
+    err = 1
+    x2 =  0
+    while(err>tol):
+        x2 = x1 - ( (trajectory(x1) * (x1 - x0)) / (trajectory(x1) - trajectory(x0)) )
+        err = abs(trajectory(x2))
+        print(x2)
+        if(err<=tol):
+            print("final angle is: ", (x2*180)/math.pi, " degrees")
+        x0 = x1
+        x1 = x2
 
-def YFunc(v0, theta):
-    return v0*(math.sin(theta))
-
-def flightTime(vy):
-    return (vy*2)/g
-
-def xDis(time, vx):
-    return vx*time
-
-def find_angles(x, y, v0):
-    # check for divisiion by 0
-    if x <= 0 or v0 <= 0:
-        return []
-    return 1
-
-
-def Bisector(a, b, tol):
-    # try:
-    #     XFunc(a)
-    #     XFunc(b)
-    # except:
-    #     print("Error the function is not continous over the domain")
-    #     return 
-    if(tol is None):
-        tol = 0.1
-    m = (a+b)
-    if(XFunc(v0, a) * XFunc(v0, b) > 0):
-        print("fat")
-        return false
-    
-    else:
-        BisectorHelper(m, a, b, tol)
-        
-
-def BisectorHelper(m, a, b, tol):
-    m = m/2
-    numM = XFunc(v0,m)
-    numA = XFunc(v0,a)
-    numB = XFunc(v0,b)
-
-    vy = YFunc(v0, m)
-    vx = XFunc(v0, m)
-    time = flightTime(vy)
-    dis = xDis(time, vx)
-    print(dis)
-    if((abs(dis - x) < tol)):
-        print("final angle is: " + str(m))
-        return 
-    elif(numA * numM < 0):
-        BisectorHelper(m, a, m, tol)
-    elif(numB * numM < 0):
-        BisectorHelper(m, m, b, tol)
-    else:
-        return
-
-
-print(Bisector(0, math.pi, 0.1))
+approx(0.3, 1, 0.1)
