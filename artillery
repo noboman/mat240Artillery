@@ -147,7 +147,7 @@ def main():
     speedValues = [100, 110, 120, 130, 140, 150]
 
     # Grid of targets to build tables for (exclusive)
-    xValues = list(range(100, 2100, 100))   # 100 to 2000 with jumps of 100
+    xValues = list(range(100, 1800, 100))   # 100 to 1700 with jumps of 100
     yValues = list(range(-50, 60, 10))      # -50 to 50 with jumps of 10
 
     for speed in speedValues:
