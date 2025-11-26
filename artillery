@@ -48,7 +48,7 @@ def bisectionRoot(initialSpeed, targetX, targetY, leftAngle, rightAngle):
             leftAngle = midAngle
             leftError = midError
 
-    # Fallback if we somehow hit the iteration limit
+    # Fallback if we somehow hit the iteration limit (one final bisection after we hit the limit)
     return 0.5 * (leftAngle + rightAngle)
 
 
