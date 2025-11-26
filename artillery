@@ -1,32 +1,159 @@
-import numpy as np
 import math
-import matplotlib.pyplot as plt
+
+# Constant for grvity
+gravity = 9.8  # m/s^2
 
 
-g = 9.8
+def heightError(angle, initialSpeed, targetX, targetY):
+    """
+    Compares how high a projectile is when its at targetX, and compare it to targetY (where it should be)
+    If its 0, that means it passes right through targetY
+    """
+    tanAngle = math.tan(angle)
+    cosAngle = math.cos(angle)
+
+    verticalFromAngle = targetX * tanAngle
+    dropFromGravity = gravity * (targetX ** 2) / (2.0 * (initialSpeed ** 2) * (cosAngle ** 2))
+
+    # Positive = above target, negative = below target, 0 = perfect hit
+    return verticalFromAngle - dropFromGravity - targetY
+
+
+def bisectionRoot(initialSpeed, targetX, targetY, leftAngle, rightAngle):
+    """
+    Given two angles where one is below the target and the other is above,
+    zoom in between them to find an angle that actually hits the target.
+    """
+    leftError = heightError(leftAngle, initialSpeed, targetX, targetY)
+    rightError = heightError(rightAngle, initialSpeed, targetX, targetY)
+
+    # If they don't have opposite signs, they don't bracket a hit
+    if leftError * rightError > 0:
+        return None
+
+    for _ in range(100):
+        midAngle = 0.5 * (leftAngle + rightAngle)
+        midError = heightError(midAngle, initialSpeed, targetX, targetY)
+
+        tolerance = 0.000001
+        # If we're close enough to 0, or the interval is tiny, call it good
+        if abs(midError) < tolerance or (rightAngle - leftAngle) < tolerance:
+            return midAngle
+
+        # Decide which half still has a sign change (so still contains the root) and update with the new midAngle
+        if leftError * midError < 0:
+            rightAngle = midAngle
+            rightError = midError
+        else:
+            leftAngle = midAngle
+            leftError = midError
+
+    # Fallback if we somehow hit the iteration limit
+    return 0.5 * (leftAngle + rightAngle)
+
+
+def findAnglesForTarget(initialSpeed, targetX, targetY):
+    """
+    Try every angle between 1 and 89 degrees (step of 0.25). Whenever the error flips sign between two
+    angles, use bisectionRoot to lock in the actual angle that hits the target.
+    """
+    angles = []
+
+    minAngle = math.radians(1.0)
+    maxAngle = math.radians(89.0)
+    angleStep = math.radians(0.25)
+
+    leftAngle = minAngle
+    leftError = heightError(leftAngle, initialSpeed, targetX, targetY)
+
+    angle = minAngle + angleStep
+    while angle <= maxAngle:
+        rightError = heightError(angle, initialSpeed, targetX, targetY)
+
+        # if we are true on this, means hit somewhere in between
+        if leftError * rightError < 0:
+            rootAngle = bisectionRoot(initialSpeed, targetX, targetY, leftAngle, angle)
+            if rootAngle is not None:
+                # Avoid adding basically the same root twice
+                if not angles or abs(rootAngle - angles[-1]) > 1e-3:
+                    angles.append(rootAngle)
+
+        # Slide window forward
+        leftAngle = angle
+        leftError = rightError
+        angle += angleStep
+
+    return angles
+
+
+def buildAngleTable(initialSpeed, xValues, yValues):
+    """
+    For one fixed initial speed, build a lookup table:
+    table[(x, y)] = list of angles in degrees, or None if out of range.
+    """
+    table = {}
+
+    for targetX in xValues:
+        for targetY in yValues:
+            # Find all angles (amount of either 0, 1, or 2) that hit this (x, y) for this speed
+            roots = findAnglesForTarget(initialSpeed, targetX, targetY)
+
+            if not roots:
+                table[(targetX, targetY)] = None
+            else:
+                # Convert to degrees and sort so low angle comes first
+                angleDegrees = sorted(math.degrees(a) for a in roots)
+                table[(targetX, targetY)] = angleDegrees
+
+    return table
+
+
+def printAngleTable(initialSpeed, xValues, yValues, table):
+    """
+    For each initial speed and distance x*, we list:
+      y* (height difference) -> angle(s) in degrees or OUT for out of bounds.
+    """
+
+    print(f"\n==============================")
+    print(f" Initial speed = {initialSpeed} m/s")
+    print(f"==============================")
+    print("For each distance x* (m), the table below shows")
+    print("the height difference y* (m) and the firing angle(s) in degrees.")
+    print("If it says OUT, that target is not reachable with this speed.\n")
+
+    for x in xValues:
+        print(f"\n--- Distance x* = {x} m ---")
+        print(f"{'y* (m)':>8} | {'angle(s) (deg)':>18}")
+        print("-" * 29)
+
+        for y in yValues:
+            angles = table[(x, y)]
+
+            if angles is None:
+                angleText = "OUT"
+            else:
+                # One angle = single trajectory; two = low and high arc
+                if len(angles) == 1:
+                    angleText = f"{angles[0]:.1f}"
+                else:
+                    angleText = f"{angles[0]:.1f} / {angles[1]:.1f}"
+
+            print(f"{y:8} | {angleText:>18}")
 
 
 
-def function(theta, x, y, v0):
-    return x * math.tan(theta) - g * x**2 / (2 * v0**2 * cos_t**2) - y
+def main():
+    # Speeds list
+    speedValues = [100, 110, 120, 130, 140, 150]
 
-def find_angles(x, y, v0):
-    # check for divisiion by 0
-    if x <= 0 or v0 <= 0:
-        return []
-    return 1
+    # Grid of targets to build tables for (exclusive)
+    xValues = list(range(100, 2100, 100))   # 100 to 2000 with jumps of 100
+    yValues = list(range(-50, 60, 10))      # -50 to 50 with jumps of 10
+
+    for speed in speedValues:
+        table = buildAngleTable(speed, xValues, yValues)
+        printAngleTable(speed, xValues, yValues, table)
+
 
 if __name__ == "__main__":
-    print("Single-shot artillery calculator (numerical root finding)")
-    try:
-        x_target = input("Please input an X coordinate:")
-        y_target = input("Please ipunt a Y coordinate:")
-        print("You have entered {X} as your X coordinate.")
-        print("You have entered {Y} as your Y coordinate.")
-    except ValueError:
-        print("Invalid input")
-
-    v0_values = list(range(100, 151, 10))
-    
-    for v0 in v0_values:
-            find_angles(x_target, y_target, v0)
+    main()
