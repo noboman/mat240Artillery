@@ -4,11 +4,21 @@ import matplotlib.pyplot as plt
 
 
 g = 9.8
+tol = 0.1
+v0 = 100
+x = 1000
 
+def XFunc(v0, theta):
+    return v0*(math.cos(theta))
 
+def YFunc(v0, theta):
+    return v0*(math.sin(theta))
 
-def function(theta, x, y, v0):
-    return x * math.tan(theta) - g * x**2 / (2 * v0**2 * cos_t**2) - y
+def flightTime(vy):
+    return (vy*2)/g
+
+def xDis(time, vx):
+    return vx*time
 
 def find_angles(x, y, v0):
     # check for divisiion by 0
@@ -16,17 +26,45 @@ def find_angles(x, y, v0):
         return []
     return 1
 
-if __name__ == "__main__":
-    print("Single-shot artillery calculator (numerical root finding)")
-    try:
-        x_target = input("Please input an X coordinate:")
-        y_target = input("Please ipunt a Y coordinate:")
-        print("You have entered {X} as your X coordinate.")
-        print("You have entered {Y} as your Y coordinate.")
-    except ValueError:
-        print("Invalid input")
 
-    v0_values = list(range(100, 151, 10))
+def Bisector(a, b, tol):
+    # try:
+    #     XFunc(a)
+    #     XFunc(b)
+    # except:
+    #     print("Error the function is not continous over the domain")
+    #     return 
+    if(tol is None):
+        tol = 0.1
+    m = (a+b)
+    if(XFunc(v0, a) * XFunc(v0, b) > 0):
+        print("fat")
+        return false
     
-    for v0 in v0_values:
-            find_angles(x_target, y_target, v0)
+    else:
+        BisectorHelper(m, a, b, tol)
+        
+
+def BisectorHelper(m, a, b, tol):
+    m = m/2
+    numM = XFunc(v0,m)
+    numA = XFunc(v0,a)
+    numB = XFunc(v0,b)
+
+    vy = YFunc(v0, m)
+    vx = XFunc(v0, m)
+    time = flightTime(vy)
+    dis = xDis(time, vx)
+    print(dis)
+    if((abs(dis - x) < tol)):
+        print("final angle is: " + str(m))
+        return 
+    elif(numA * numM < 0):
+        BisectorHelper(m, a, m, tol)
+    elif(numB * numM < 0):
+        BisectorHelper(m, m, b, tol)
+    else:
+        return
+
+
+print(Bisector(0, math.pi, 0.1))
