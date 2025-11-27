@@ -110,8 +110,9 @@ def buildAngleTable(initialSpeed, xValues, yValues):
 
 def printAngleTable(initialSpeed, xValues, yValues, table):
     """
-    For each initial speed and distance x*, we list:
-      y* (height difference) -> angle(s) in degrees or OUT for out of bounds.
+    For each starting speed and distance x*, this shows
+    the height difference y* and the angle(s) to use in degrees,
+    or OUT if the target can’t be hit with that speed.
     """
 
     print(f"\n==============================")
@@ -146,9 +147,9 @@ def main():
     # Speeds list
     speedValues = [100, 110, 120, 130, 140, 150]
 
-    # Grid of targets to build tables for (exclusive)
-    xValues = list(range(100, 1800, 100))   # 100 to 1700 with jumps of 100
-    yValues = list(range(-50, 60, 10))      # -50 to 50 with jumps of 10
+    # Grid of targets to build tables for
+    xValues = list(range(100, 1800, 100))   # 100 to 1700 with step size of 100
+    yValues = list(range(-50, 60, 10))      # -50 to 50 with step size of 10
 
     for speed in speedValues:
         table = buildAngleTable(speed, xValues, yValues)
