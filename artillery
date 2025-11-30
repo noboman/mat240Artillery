@@ -1,8 +1,11 @@
 import math
+import numpy as np 
+import matplotlib.pyplot as plt
+
+
 
 # Constant for grvity
 gravity = 9.8  # m/s^2
-
 
 def heightError(angle, initialSpeed, targetX, targetY):
     """
@@ -153,7 +156,26 @@ def main():
 
     for speed in speedValues:
         table = buildAngleTable(speed, xValues, yValues)
-        printAngleTable(speed, xValues, yValues, table)
+        #printAngleTable(speed, xValues, yValues, table)
+
+    xPlot = []
+    yPlot = []
+    anglePlot = []
+    angle = list(table.values())
+    ranges = list(table.keys())
+
+    for coord in ranges:
+        xPlot.append(coord[0])
+        yPlot.append(coord[1])
+
+    for y in angle:
+        anglePlot.append(y[0])
+
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.title("Artillery")
+    plt.plot(xPlot, anglePlot)
+    plt.show()
 
 
 if __name__ == "__main__":
