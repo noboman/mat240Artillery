@@ -165,6 +165,7 @@ def plotAngleSweep(initialSpeed, targetX, targetY):
     # Angles around the root angle that we want to show on the graph (degrees)
     angleOffsetsDeg = [-10, -5, 0, 5, 10]
 
+    # hard coded colours rn
     offsetColors = {
         -10:"#1f77b4",
         -5: "#1f77b4",
