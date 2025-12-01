@@ -163,9 +163,9 @@ def plotAngleSweep(initialSpeed, targetX, targetY):
     rootAngleDeg = math.degrees(rootAngleRad)    # degrees
 
     # Angles around the root angle that we want to show on the graph (degrees)
-    angleOffsetsDeg = [-10, -5, 0, 5, 10]
+    angleOffsetsDeg = [-10, -5, -1, 0, 1, 5, 10]
 
-    # hard coded colours rn
+    # hard coded colors and angles rn
     offsetColors = {
         -10:"#1f77b4",
         -5: "#1f77b4",
@@ -217,7 +217,7 @@ def main():
     # Kinda works, needs a better way to grab relevant x and y valyues
     for speed in speedValues:
         table = buildAngleTable(speed, xValues, yValues)
-        plotAngleSweep(speed, xValues[0], yValues[0])
+        plotAngleSweep(speed, xValues[5], yValues[5])
 
 
 
