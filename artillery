@@ -1,22 +1,32 @@
 import math
+import numpy as np 
+import matplotlib.pyplot as plt
 
 # Constant for grvity
 gravity = 9.8  # m/s^2
+tolerance = 0.000001
+
+def f(angle, initialSpeed, x):
+    """
+    Projectile height function:
+    Returns the height of the function at a given x.
+    y(x) = x * tan(theta) - g * x^2 / (2 * v^2 * cos^2(theta))
+    """
+    tanAngle = np.tan(angle)
+    cosAngle = np.cos(angle)
+    return x * tanAngle - gravity * x**2 / (2.0 * initialSpeed**2 * cosAngle**2)
 
 
 def heightError(angle, initialSpeed, targetX, targetY):
     """
-    Compares how high a projectile is when its at targetX, and compare it to targetY (where it should be)
-    If its 0, that means it passes right through targetY
+    Compares how high a projectile is when it's at targetX, and compare it to targetY (where it should be)
+    If it's 0, that means it passes right through targetY
     """
-    tanAngle = math.tan(angle)
-    cosAngle = math.cos(angle)
-
-    verticalFromAngle = targetX * tanAngle
-    dropFromGravity = gravity * (targetX ** 2) / (2.0 * (initialSpeed ** 2) * (cosAngle ** 2))
+    y_at_targetX = f(angle, initialSpeed, targetX)
 
     # Positive = above target, negative = below target, 0 = perfect hit
-    return verticalFromAngle - dropFromGravity - targetY
+    return y_at_targetX - targetY
+
 
 
 def bisectionRoot(initialSpeed, targetX, targetY, leftAngle, rightAngle):
@@ -27,7 +37,7 @@ def bisectionRoot(initialSpeed, targetX, targetY, leftAngle, rightAngle):
     leftError = heightError(leftAngle, initialSpeed, targetX, targetY)
     rightError = heightError(rightAngle, initialSpeed, targetX, targetY)
 
-    # If they don't have opposite signs, they don't bracket a hit
+    # If they don't have opposite signs, they don't save a hit
     if leftError * rightError > 0:
         return None
 
@@ -35,7 +45,7 @@ def bisectionRoot(initialSpeed, targetX, targetY, leftAngle, rightAngle):
         midAngle = 0.5 * (leftAngle + rightAngle)
         midError = heightError(midAngle, initialSpeed, targetX, targetY)
 
-        tolerance = 0.000001
+        
         # If we're close enough to 0, or the interval is tiny, call it good
         if abs(midError) < tolerance or (rightAngle - leftAngle) < tolerance:
             return midAngle
@@ -54,8 +64,8 @@ def bisectionRoot(initialSpeed, targetX, targetY, leftAngle, rightAngle):
 
 def findAnglesForTarget(initialSpeed, targetX, targetY):
     """
-    Try every angle between 1 and 89 degrees (step of 0.25). Whenever the error flips sign between two
-    angles, use bisectionRoot to lock in the actual angle that hits the target.
+    Try every angle between 1 and 89 degrees (step of 0.25). Whenever the sign of the error flips 
+    sign between two angles, use bisectionRoot to lock in the actual angle that hits the target.
     """
     angles = []
 
@@ -75,7 +85,7 @@ def findAnglesForTarget(initialSpeed, targetX, targetY):
             rootAngle = bisectionRoot(initialSpeed, targetX, targetY, leftAngle, angle)
             if rootAngle is not None:
                 # Avoid adding basically the same root twice
-                if not angles or abs(rootAngle - angles[-1]) > 1e-3:
+                if not angles or abs(rootAngle - angles[-1]) > tolerance:
                     angles.append(rootAngle)
 
         # Slide window forward
@@ -107,53 +117,107 @@ def buildAngleTable(initialSpeed, xValues, yValues):
 
     return table
 
+# def printAngleTable(initialSpeed, xValues, yValues, table):
+#     """
+#     For each starting speed and distance x*, this shows
+#     the height difference y* and the angle(s) to use in degrees,
+#     or OUT if the target can’t be hit with that speed.
+#     """
 
-def printAngleTable(initialSpeed, xValues, yValues, table):
+#     print(f"\n==============================")
+#     print(f" Initial speed = {initialSpeed} m/s")
+#     print(f"==============================")
+#     print("For each distance x* (m), the table below shows")
+#     print("the height difference y* (m) and the firing angle(s) in degrees.")
+#     print("If it says OUT, that target is not reachable with this speed.\n")
+
+#     for x in xValues:
+#         print(f"\n--- Distance x* = {x} m ---")
+#         print(f"{'y* (m)':>8} | {'angle(s) (deg)':>18}")
+#         print("-" * 29)
+
+#         for y in yValues:
+#             angles = table[(x, y)]
+
+#             if angles is None:
+#                 angleText = "OUT"
+#             else:
+#                 # One angle = single trajectory; two = low and high arc
+#                 if len(angles) == 1:
+#                     angleText = f"{angles[0]:.1f}"
+#                 else:
+#                     angleText = f"{angles[0]:.1f} / {angles[1]:.1f}"
+
+#             print(f"{y:8} | {angleText:>18}")
+
+
+def plotAngleSweep(initialSpeed, targetX, targetY):
     """
-    For each starting speed and distance x*, this shows
-    the height difference y* and the angle(s) to use in degrees,
-    or OUT if the target can’t be hit with that speed.
+    Blue = lower angles (short/low shots)
+    Red = angle that actually hits the target (from our solver)
+    Orange = higher angles (high/long shots)
     """
+    # Get the angle that hits the target
+    rootAngles = findAnglesForTarget(initialSpeed, targetX, targetY)
+    rootAngleRad = rootAngles[0]                 # radians
+    rootAngleDeg = math.degrees(rootAngleRad)    # degrees
 
-    print(f"\n==============================")
-    print(f" Initial speed = {initialSpeed} m/s")
-    print(f"==============================")
-    print("For each distance x* (m), the table below shows")
-    print("the height difference y* (m) and the firing angle(s) in degrees.")
-    print("If it says OUT, that target is not reachable with this speed.\n")
+    # Angles around the root angle that we want to show on the graph (degrees)
+    angleOffsetsDeg = [-10, -5, 0, 5, 10]
 
-    for x in xValues:
-        print(f"\n--- Distance x* = {x} m ---")
-        print(f"{'y* (m)':>8} | {'angle(s) (deg)':>18}")
-        print("-" * 29)
+    offsetColors = {
+        -10:"#1f77b4",
+        -5: "#1f77b4",
+        -1: "#1f77b4",
+         0: "#ff0000",
+         1: "#ff7f0e",
+         5: "#ff7f0e",
+        10: "#ff7f0e",
+    }
 
-        for y in yValues:
-            angles = table[(x, y)]
+    xValues = np.linspace(0, targetX * 1.1, 300)
+    maxHeight = 0.0
 
-            if angles is None:
-                angleText = "OUT"
-            else:
-                # One angle = single trajectory; two = low and high arc
-                if len(angles) == 1:
-                    angleText = f"{angles[0]:.1f}"
-                else:
-                    angleText = f"{angles[0]:.1f} / {angles[1]:.1f}"
+    for offsetDeg in angleOffsetsDeg:
+        currentAngleDeg = rootAngleDeg + offsetDeg
+        currentAngleRad = math.radians(currentAngleDeg)
 
-            print(f"{y:8} | {angleText:>18}")
+        yValues = f(currentAngleRad, initialSpeed, xValues)
 
+        # get max for zoom
+        thisMax = np.max(yValues)
+        if thisMax > maxHeight:
+            maxHeight = thisMax
+
+        lineColor = offsetColors[offsetDeg]
+
+        plt.plot(xValues, yValues, color=lineColor)
+
+    # Zoom to fit
+    plt.xlim(0, targetX * 1.1)
+    if maxHeight > 0:
+        plt.ylim(0, maxHeight * 1.1)
+
+    plt.xlabel("x (m)")
+    plt.ylabel("y (m)")
+    plt.title(f"v0 = {initialSpeed} m/s, target = ({targetX}, {targetY})")
+
+    plt.show()
 
 
 def main():
     # Speeds list
     speedValues = [100, 110, 120, 130, 140, 150]
 
-    # Grid of targets to build tables for
-    xValues = list(range(100, 1800, 100))   # 100 to 1700 with step size of 100
-    yValues = list(range(-50, 60, 10))      # -50 to 50 with step size of 10
+    # Grid for the heatmap
+    xValues = list(range(100, 1800, 100))   # 100 to 1700
+    yValues = list(range(-50, 60, 10))      # -50 to 50
 
+    # Kinda works, needs a better way to grab relevant x and y valyues
     for speed in speedValues:
         table = buildAngleTable(speed, xValues, yValues)
-        printAngleTable(speed, xValues, yValues, table)
+        plotAngleSweep(speed, xValues[0], yValues[0])
+
 
 
 if __name__ == "__main__":
